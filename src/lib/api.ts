@@ -38,6 +38,28 @@ export async function fetchPageMappings(): Promise<MappingEntry[]> {
   }
 }
 
+export async function importPageMappingsCSV(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await apiClient.post(`${MAPPINGS_URL}/import`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+}
+
+export async function importLegacyDataCSV(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await apiClient.post(`${API_BASE_URL}/import/legacy`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+}
+
 export async function createPageMapping(mapping: MappingEntry) {
   return apiClient.post(MAPPINGS_URL, mapping);
 }

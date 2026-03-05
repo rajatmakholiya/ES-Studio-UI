@@ -5,6 +5,10 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token");
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
 
+  if (request.nextUrl.pathname.startsWith("/privacy")) {
+    return NextResponse.next();
+  }
+
   if (!token && !isLoginPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

@@ -41,6 +41,8 @@ export function TrafficTable({ data, dateHeaders }: TrafficTableProps) {
       }
       const g = groups[row.category];
       g.rows.push(row);
+
+      // Totals logic
       g.totals.sessions += row.totals.sessions;
       g.totals.users += row.totals.users;
       g.totals.pageviews += row.totals.pageviews;
@@ -90,6 +92,7 @@ export function TrafficTable({ data, dateHeaders }: TrafficTableProps) {
     return dayData[gridMetric] || 0;
   };
 
+  // CSV Export Handler
   const handleExportCSV = () => {
     if (!groupedData.length) return;
 
@@ -149,7 +152,7 @@ export function TrafficTable({ data, dateHeaders }: TrafficTableProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full max-h-[600px]">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full max-h-[900px] max-w-[85vw] overflow-scroll">
       {/* Header */}
       <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm z-20 rounded-t-2xl">
         <div className="flex items-center gap-2">
@@ -179,7 +182,7 @@ export function TrafficTable({ data, dateHeaders }: TrafficTableProps) {
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export CSV</span>
           </button>
-
+          
           {(["sessions", "users", "pageviews", "engagement_rate"] as const).map(
             (m) => (
               <button

@@ -58,21 +58,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Usage Widget (Bottom) */}
-      <div className="p-4 mt-auto">
-        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4 transition-colors duration-200">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-            Usage
-          </p>
-          <div className="mt-3 h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-            <div className="h-1.5 w-3/4 rounded-full bg-indigo-500" />
-          </div>
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            75% of data credits used
-          </p>
-        </div>
-      </div>
     </aside>
   );
 }

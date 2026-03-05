@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   fetchPageMappings,
   createPageMapping,
   deletePageMapping,
+  importPageMappingsCSV,
+  importLegacyDataCSV,
 } from "@/lib/api";
 import { MappingEntry } from "@/data/page-mapping";
-import { Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, ArrowLeft, UploadCloud, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface MappingWithId extends MappingEntry {
@@ -17,11 +19,19 @@ interface MappingWithId extends MappingEntry {
 export default function PageMappingsSettings() {
   const [mappings, setMappings] = useState<MappingWithId[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Single Entry States
   const [newCategory, setNewCategory] = useState("");
   const [newPlatform, setNewPlatform] = useState("Facebook");
   const [newPageName, setNewPageName] = useState("");
   const [newUtmSource, setNewUtmSource] = useState("fb");
   const [newMediums, setNewMediums] = useState("");
+
+  // Upload States
+  const [isUploadingMapping, setIsUploadingMapping] = useState(false);
+  const [isUploadingAnalytics, setIsUploadingAnalytics] = useState(false);
+  const mappingFileInputRef = useRef<HTMLInputElement>(null);
+  const analyticsFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadMappings();
@@ -69,6 +79,41 @@ export default function PageMappingsSettings() {
     }
   };
 
+  const handleMappingFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingMapping(true);
+    try {
+      const res = await importPageMappingsCSV(file);
+      alert(res.message || "Page mappings imported successfully!");
+      loadMappings(); // Refresh table after upload
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to import mappings");
+    } finally {
+      setIsUploadingMapping(false);
+      if (mappingFileInputRef.current) mappingFileInputRef.current.value = "";
+    }
+  };
+
+  const handleAnalyticsFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAnalytics(true);
+    try {
+      const res = await importLegacyDataCSV(file);
+      alert(res.message || "Legacy analytics data imported successfully!");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to import analytics data");
+    } finally {
+      setIsUploadingAnalytics(false);
+      if (analyticsFileInputRef.current) analyticsFileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black p-8 text-gray-900 dark:text-gray-100 pb-20">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -79,12 +124,63 @@ export default function PageMappingsSettings() {
           >
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <h1 className="text-3xl font-bold">UTM Page Mappings</h1>
+          <h1 className="text-3xl font-bold">UTM Settings & Mappings</h1>
         </div>
 
-        {/* Add New Form */}
+        {/* Bulk Uploads Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
+            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <UploadCloud className="w-5 h-5 text-blue-500" /> Upload Page Mappings
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Import a CSV to bulk-add page mapping configurations. (category, platform, pageName, utmSource, utmMediums)
+            </p>
+            <input
+              type="file"
+              accept=".csv"
+              className="hidden"
+              ref={mappingFileInputRef}
+              onChange={handleMappingFileUpload}
+            />
+            <button
+              onClick={() => mappingFileInputRef.current?.click()}
+              disabled={isUploadingMapping}
+              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium transition disabled:opacity-50"
+            >
+              {isUploadingMapping ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+              {isUploadingMapping ? "Uploading..." : "Select Mappings CSV"}
+            </button>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
+            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <UploadCloud className="w-5 h-5 text-green-500" /> Upload Legacy Analytics
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Import raw daily UTM analytics data via CSV to append historical traffic figures to your database.
+            </p>
+            <input
+              type="file"
+              accept=".csv"
+              className="hidden"
+              ref={analyticsFileInputRef}
+              onChange={handleAnalyticsFileUpload}
+            />
+            <button
+              onClick={() => analyticsFileInputRef.current?.click()}
+              disabled={isUploadingAnalytics}
+              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium transition disabled:opacity-50"
+            >
+              {isUploadingAnalytics ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+              {isUploadingAnalytics ? "Processing..." : "Select Legacy Data CSV"}
+            </button>
+          </div>
+        </div>
+
+        {/* Add New Single Mapping Form */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
-          <h2 className="text-xl font-semibold mb-4">Add New Mapping</h2>
+          <h2 className="text-xl font-semibold mb-4">Add Single Mapping</h2>
           <form
             onSubmit={handleAdd}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end"
@@ -161,8 +257,15 @@ export default function PageMappingsSettings() {
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center">
+                  <td colSpan={5} className="px-6 py-8 text-center flex flex-col items-center justify-center text-gray-500">
+                    <Loader2 className="w-6 h-6 animate-spin mb-2" />
                     Loading mappings...
+                  </td>
+                </tr>
+              ) : mappings.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    No mappings found. Add one above or upload a CSV.
                   </td>
                 </tr>
               ) : (
@@ -191,7 +294,8 @@ export default function PageMappingsSettings() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleDelete(m.id)}
-                        className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition"
+                        className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition"
+                        title="Delete Mapping"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
