@@ -59,11 +59,9 @@ export default function DashboardPage() {
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30 shadow-sm">
         <div className="max-w-[95%] mx-auto px-4 flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg shadow-blue-200 dark:shadow-none shadow-md">
-              <Layout className="w-5 h-5 text-white" />
-            </div>
+            
             <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-              ES
+              UTM 
               <span className="text-blue-600 dark:text-blue-400">
                 Analytics
               </span>
@@ -85,8 +83,7 @@ export default function DashboardPage() {
                 icon={Layers}
               />
             </div>
-            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-            <ThemeToggle />
+            
           </div>
         </div>
       </div>

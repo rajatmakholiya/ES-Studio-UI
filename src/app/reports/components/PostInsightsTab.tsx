@@ -321,16 +321,16 @@ export default function PostInsightsTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="flex flex-wrap items-center gap-6 flex-1">
           <div className="flex flex-col space-y-1 w-full sm:w-auto min-w-[160px]">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pl-1">
+            <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1">
               Sources
             </label>
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <option value="all">Viewing all</option>
               {profiles
@@ -344,13 +344,13 @@ export default function PostInsightsTab({
           </div>
 
           <div className="flex flex-col space-y-1 w-full sm:w-auto min-w-[160px]">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pl-1">
+            <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1">
               Post Types
             </label>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <option value="all">Viewing all</option>
               <option value="video">Video</option>
@@ -361,13 +361,13 @@ export default function PostInsightsTab({
           </div>
 
           <div className="flex flex-col space-y-1 w-full sm:w-auto min-w-[160px]">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pl-1">
+            <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1">
               Published Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <option value="all">Viewing all</option>
               <option value="published">Published</option>
@@ -377,13 +377,13 @@ export default function PostInsightsTab({
           </div>
 
           <div className="flex flex-col space-y-1 w-full sm:w-auto min-w-[160px]">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pl-1">
+            <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1">
               Authors
             </label>
             <select
               value={authorFilter}
               onChange={(e) => setAuthorFilter(e.target.value)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none font-semibold shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <option value="all">Viewing all</option>
               {uniqueAuthors.map((author) => (
@@ -410,7 +410,7 @@ export default function PostInsightsTab({
         <div className="flex items-center justify-end gap-3 w-full xl:w-auto pt-2 xl:pt-0">
           <button
             onClick={exportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-colors"
           >
             <Download size={14} /> Export
           </button>
@@ -421,7 +421,7 @@ export default function PostInsightsTab({
             <select
               value={preset}
               onChange={handlePresetChange}
-              className="bg-gray-50 border border-gray-200 text-sm font-semibold text-gray-700 outline-none cursor-pointer rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors"
+              className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 outline-none cursor-pointer rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
@@ -443,16 +443,16 @@ export default function PostInsightsTab({
             )}
           </div>
 
-          <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-white shadow-sm text-gray-900 border border-gray-200" : "text-gray-500 hover:text-gray-900"}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"}`}
             >
               <List size={18} />
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-white shadow-sm text-gray-900 border border-gray-200" : "text-gray-500 hover:text-gray-900"}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"}`}
             >
               <LayoutGrid size={18} />
             </button>
@@ -465,18 +465,18 @@ export default function PostInsightsTab({
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as "desc" | "asc")}
-            className="text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md px-3 py-1.5 outline-none shadow-sm cursor-pointer hover:bg-gray-50"
+            className="text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-1.5 outline-none shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
-          <span className="text-sm text-gray-500 font-medium px-1">by</span>
-          <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 shadow-sm hover:bg-gray-50">
-            <LayoutGrid size={14} className="text-gray-400" />
+          <span className="text-sm text-gray-500 dark:text-gray-400 font-medium px-1">by</span>
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-1.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+            <LayoutGrid size={14} className="text-gray-400 dark:text-gray-500" />
             <select
               value={sortMetric}
               onChange={(e) => setSortMetric(e.target.value as SortMetric)}
-              className="text-sm font-semibold text-gray-700 outline-none bg-transparent cursor-pointer"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-200 outline-none bg-transparent cursor-pointer"
             >
               <option value="date">Published Date</option>
               <option value="reach">Reach</option>
@@ -493,7 +493,7 @@ export default function PostInsightsTab({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-sm text-gray-600">
+        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <span className="font-medium">
             {selectedPosts.length} of {filteredPosts.length.toLocaleString()}{" "}
             selected
@@ -501,7 +501,7 @@ export default function PostInsightsTab({
           {selectedPosts.length > 0 && (
             <button
               onClick={() => setSelectedPosts([])}
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
             >
               Clear Selected
             </button>
@@ -510,15 +510,15 @@ export default function PostInsightsTab({
       </div>
 
       {loading ? (
-        <div className="flex h-64 flex-col gap-3 items-center justify-center bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <div className="flex h-64 flex-col gap-3 items-center justify-center bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-gray-500 font-medium">
+          <div className="text-gray-500 dark:text-gray-400 font-medium">
             Fetching post insights...
           </div>
         </div>
       ) : filteredPosts.length === 0 ? (
-        <div className="flex h-64 items-center justify-center text-center p-8 bg-white rounded-2xl border border-gray-200 shadow-sm">
-          <p className="text-gray-500 font-medium">
+        <div className="flex h-64 items-center justify-center text-center p-8 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
             No posts found matching the selected filters.
           </p>
         </div>
@@ -538,17 +538,17 @@ export default function PostInsightsTab({
             return (
               <div
                 key={post.postId}
-                className={`flex flex-col bg-white rounded-xl transition-all relative ${isSelected ? "border-[2px] border-blue-500 shadow-md ring-2 ring-blue-100" : "border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-gray-300"}`}
+                className={`flex flex-col bg-white dark:bg-gray-900 rounded-xl transition-all relative ${isSelected ? "border-[2px] border-blue-500 shadow-md ring-2 ring-blue-100 dark:ring-blue-900" : "border border-gray-200 dark:border-gray-800 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] hover:border-gray-300 dark:hover:border-gray-700"}`}
               >
-                <div className="absolute top-3 right-3 z-10 bg-white rounded-sm">
+                <div className="absolute top-3 right-3 z-10 bg-white dark:bg-gray-800 rounded-sm">
                   <button
                     onClick={() => toggleSelectPost(post.postId)}
-                    className="text-gray-400 hover:text-blue-600 flex items-center justify-center"
+                    className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center"
                   >
                     {isSelected ? (
                       <CheckSquare
                         size={18}
-                        className="text-blue-500 fill-blue-50"
+                        className="text-blue-500 fill-blue-50 dark:fill-blue-900"
                         strokeWidth={2.5}
                       />
                     ) : (
@@ -559,10 +559,10 @@ export default function PostInsightsTab({
 
                 <div className="p-4 flex items-start gap-3">
                   <div className="relative flex-shrink-0 mt-0.5">
-                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-bold text-xs uppercase overflow-hidden border border-gray-300">
+                    <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold text-xs uppercase overflow-hidden border border-gray-300 dark:border-gray-600">
                       {getProfileName(post.profileId).substring(0, 2)}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-[1px] shadow-sm">
+                    <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-900 rounded-full p-[1px] shadow-sm">
                       {post.platform === "facebook" ? (
                         <Facebook
                           size={12}
@@ -575,7 +575,7 @@ export default function PostInsightsTab({
                   </div>
                   <div className="flex-1 min-w-0 pr-6">
                     <p
-                      className="text-sm font-bold text-gray-900 truncate"
+                      className="text-sm font-bold text-gray-900 dark:text-white truncate"
                       title={getProfileName(post.profileId)}
                     >
                       {getProfileName(post.profileId)}
@@ -584,7 +584,7 @@ export default function PostInsightsTab({
                       href={post.permalink || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-gray-500 font-medium mt-0.5 hover:text-blue-600 hover:underline transition-colors block truncate"
+                      className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-0.5 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block truncate"
                     >
                       {formatDateString(post.postedAt)}
                     </a>
@@ -592,15 +592,15 @@ export default function PostInsightsTab({
                 </div>
 
                 <div className="px-4 flex-1 flex flex-col">
-                  <p className="text-xs text-gray-800 line-clamp-3 mb-3 leading-relaxed">
+                  <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-3 mb-3 leading-relaxed">
                     {post.message || (
-                      <span className="italic text-gray-400">
+                      <span className="italic text-gray-400 dark:text-gray-500">
                         No text content
                       </span>
                     )}
                   </p>
 
-                  <div className="w-full aspect-square bg-gray-100 rounded-lg relative overflow-hidden group mb-4 border border-gray-200">
+                  <div className="w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg relative overflow-hidden group mb-4 border border-gray-200 dark:border-gray-700">
                     {post.thumbnailUrl ? (
                       <img
                         src={post.thumbnailUrl}
@@ -608,7 +608,7 @@ export default function PostInsightsTab({
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600">
                         <ImageIcon size={32} />
                       </div>
                     )}
@@ -619,71 +619,71 @@ export default function PostInsightsTab({
 
                   <div className="space-y-0 mt-auto text-[13px]">
                     {isVideo && (
-                      <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200">
-                        <span className="text-gray-600 font-medium">
+                      <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">
                           Video Views
                         </span>
-                        <span className="font-semibold text-gray-900">
+                        <span className="font-semibold text-gray-900 dark:text-white">
                           {post.views.toLocaleString()}
                         </span>
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200">
-                      <span className="text-blue-600 font-medium cursor-pointer hover:underline">
+                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
+                      <span className="text-blue-600 dark:text-blue-400 font-medium cursor-pointer hover:underline">
                         Reach
                       </span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 dark:text-white">
                         {post.reach.toLocaleString()}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200">
-                      <span className="text-gray-600 font-medium">
+                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">
                         Engagements
                       </span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 dark:text-white">
                         {totalEngagements.toLocaleString()}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200">
-                      <span className="text-gray-500 font-bold text-[10px] uppercase tracking-wider">
+                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-500 dark:text-gray-400 font-bold text-[10px] uppercase tracking-wider">
                         Likes / Comments / Shares
                       </span>
-                      <div className="flex items-center gap-1.5 font-semibold text-gray-900 text-xs">
+                      <div className="flex items-center gap-1.5 font-semibold text-gray-900 dark:text-white text-xs">
                         <span title="Likes">{post.likes.toLocaleString()}</span>
-                        <span className="text-gray-300 font-normal">|</span>
+                        <span className="text-gray-300 dark:text-gray-600 font-normal">|</span>
                         <span title="Comments">
                           {post.comments.toLocaleString()}
                         </span>
-                        <span className="text-gray-300 font-normal">|</span>
+                        <span className="text-gray-300 dark:text-gray-600 font-normal">|</span>
                         <span title="Shares">
                           {post.shares.toLocaleString()}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200">
-                      <span className="text-gray-600 font-medium">
+                    <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">
                         Engagement Rate (per Reach)
                       </span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 dark:text-white">
                         {engRate}%
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="px-4 py-3 mt-3 flex items-center justify-between text-gray-400 bg-gray-50/50 border-t border-gray-100 rounded-b-xl">
+                <div className="px-4 py-3 mt-3 flex items-center justify-between text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 rounded-b-xl">
                   <div className="flex gap-1">
                     {!post.isPublished && (
-                      <span className="bg-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                      <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                         Unpublished
                       </span>
                     )}
                     {post.isBoosted && (
-                      <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                      <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                         Boosted
                       </span>
                     )}
@@ -691,13 +691,13 @@ export default function PostInsightsTab({
                   <div className="flex gap-3">
                     <Tag
                       size={16}
-                      className="cursor-pointer hover:text-gray-700 transition-colors"
+                      className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                     />
                     <a
                       href={post.permalink || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-blue-600 transition-colors"
+                      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       title="View Post"
                     >
                       <ExternalLink size={16} className="cursor-pointer" />
@@ -709,15 +709,15 @@ export default function PostInsightsTab({
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3 w-10 text-center">
                     <button
                       onClick={toggleSelectAll}
-                      className="text-gray-400 hover:text-blue-600"
+                      className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"
                     >
                       {selectedPosts.length === currentPosts.length &&
                       currentPosts.length > 0 ? (
@@ -740,7 +740,7 @@ export default function PostInsightsTab({
                   <th className="px-4 py-3 text-center">Link</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {currentPosts.map((post) => {
                   const isSelected = selectedPosts.includes(post.postId);
                   const totalEngagements =
@@ -756,12 +756,12 @@ export default function PostInsightsTab({
                   return (
                     <tr
                       key={post.postId}
-                      className={`hover:bg-gray-50 transition-colors ${isSelected ? "bg-blue-50/30" : ""}`}
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${isSelected ? "bg-blue-50/30 dark:bg-blue-900/10" : ""}`}
                     >
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => toggleSelectPost(post.postId)}
-                          className="text-gray-400 hover:text-blue-600"
+                          className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"
                         >
                           {isSelected ? (
                             <CheckSquare size={16} className="text-blue-500" />
@@ -771,10 +771,10 @@ export default function PostInsightsTab({
                         </button>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900 text-[13px]">
+                        <p className="font-semibold text-gray-900 dark:text-white text-[13px]">
                           {formatDateString(post.postedAt)}
                         </p>
-                        <div className="flex items-center gap-1.5 mt-1 text-gray-500 text-xs">
+                        <div className="flex items-center gap-1.5 mt-1 text-gray-500 dark:text-gray-400 text-xs">
                           {post.platform === "facebook" ? (
                             <Facebook size={12} className="text-[#1877F2]" />
                           ) : (
@@ -790,19 +790,19 @@ export default function PostInsightsTab({
                           {post.thumbnailUrl ? (
                             <img
                               src={post.thumbnailUrl}
-                              className="w-10 h-10 rounded-md object-cover border border-gray-200 flex-shrink-0"
+                              className="w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-md bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 flex-shrink-0">
+                            <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 flex-shrink-0">
                               <ImageIcon size={16} />
                             </div>
                           )}
                           <p
-                            className="truncate text-xs text-gray-700"
+                            className="truncate text-xs text-gray-700 dark:text-gray-300"
                             title={post.message}
                           >
                             {post.message || (
-                              <span className="italic text-gray-400">
+                              <span className="italic text-gray-400 dark:text-gray-500">
                                 No text content
                               </span>
                             )}
@@ -810,29 +810,29 @@ export default function PostInsightsTab({
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center justify-center bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-semibold">
+                        <span className="inline-flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded text-xs font-semibold">
                           {getCleanTypeString(post.postType)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                      <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
                         {post.reach.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                      <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
                         {isVideo ? post.views.toLocaleString() : "-"}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-blue-600">
+                      <td className="px-4 py-3 text-right font-semibold text-blue-600 dark:text-blue-400">
                         {totalEngagements.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-600">
+                      <td className="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-400">
                         {post.likes.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-600">
+                      <td className="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-400">
                         {post.comments.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-600">
+                      <td className="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-400">
                         {post.shares.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                      <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
                         {engRate}%
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -840,7 +840,7 @@ export default function PostInsightsTab({
                           href={post.permalink || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block text-gray-400 hover:text-blue-600 transition-colors p-1"
+                          className="inline-block text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1"
                         >
                           <ExternalLink size={16} />
                         </a>
@@ -855,15 +855,15 @@ export default function PostInsightsTab({
       )}
 
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm mt-6">
-          <span className="text-sm text-gray-600 font-medium mb-3 sm:mb-0">
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm mt-6">
+          <span className="text-sm text-gray-600 dark:text-gray-400 font-medium mb-3 sm:mb-0">
             Showing{" "}
-            <span className="text-gray-900 font-bold">{startIndex + 1}</span> to{" "}
-            <span className="text-gray-900 font-bold">
+            <span className="text-gray-900 dark:text-white font-bold">{startIndex + 1}</span> to{" "}
+            <span className="text-gray-900 dark:text-white font-bold">
               {Math.min(startIndex + postsPerPage, filteredPosts.length)}
             </span>{" "}
             of{" "}
-            <span className="text-gray-900 font-bold">
+            <span className="text-gray-900 dark:text-white font-bold">
               {filteredPosts.length.toLocaleString()}
             </span>{" "}
             posts
@@ -872,17 +872,17 @@ export default function PostInsightsTab({
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <ChevronLeft size={16} /> Prev
             </button>
-            <span className="text-sm font-bold text-gray-900 px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200">
+            <span className="text-sm font-bold text-gray-900 dark:text-white px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
               Page {currentPage} of {totalPages}
             </span>
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Next <ChevronRight size={16} />
             </button>

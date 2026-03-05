@@ -16,8 +16,8 @@ const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Web Traffic', href: '/traffic', icon: BarChart3 }, 
   { name: 'Reports', href: '/reports', icon: BarChart2 },
-  { name: 'Schedule', href: '/schedule', icon: CalendarDays },
-  { name: 'Smart Box', href: '/smart-box', icon: Inbox },
+  // { name: 'Schedule', href: '/schedule', icon: CalendarDays },
+  // { name: 'Smart Box', href: '/smart-box', icon: Inbox },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
