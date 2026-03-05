@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*', 
+        source: '/api-proxy/:path*',
+        destination: 'http://51.20.143.136:5000/:path*',
       },
     ];
   },
