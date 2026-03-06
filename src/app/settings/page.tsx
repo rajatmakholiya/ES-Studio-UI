@@ -509,6 +509,17 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Policy Links */}
+      <div className="pt-8 mt-8 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center gap-6 text-sm">
+        <a href="/privacy" className="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+          Privacy Policy
+        </a>
+        <span className="text-gray-300 dark:text-gray-700">•</span>
+        <a href="/terms" className="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+          Terms of Service
+        </a>
+      </div>
     </div>
   );
 }
