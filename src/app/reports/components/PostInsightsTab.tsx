@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   LayoutGrid,
   List,
@@ -51,6 +52,22 @@ type SortMetric =
   | "clicks"
   | "views";
 
+// --- React Query Fetch Function ---
+const fetchPostsData = async ({ queryKey }: any) => {
+  const [_key, profileIds, startDate, endDate] = queryKey;
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  
+  const res = await fetch(`${BACKEND_URL}/api/analytics/posts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ profileIds, startDate, endDate }),
+  });
+  
+  if (!res.ok) throw new Error("Failed to fetch posts");
+  return res.json();
+};
+
 export default function PostInsightsTab({
   selectedProfileIds,
   profiles,
@@ -62,13 +79,10 @@ export default function PostInsightsTab({
   const initStart = new Date();
   initStart.setDate(initStart.getDate() - 30);
 
-  const [startDate, setStartDate] = useState(
-    initStart.toISOString().split("T")[0],
-  );
+  const [startDate, setStartDate] = useState(initStart.toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState(initEnd.toISOString().split("T")[0]);
   const [preset, setPreset] = useState<string>("30");
-  const [posts, setPosts] = useState<PostData[]>([]);
-  const [loading, setLoading] = useState(false);
+
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [sortMetric, setSortMetric] = useState<SortMetric>("date");
@@ -80,32 +94,13 @@ export default function PostInsightsTab({
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = viewMode === "grid" ? 20 : 30;
 
-  useEffect(() => {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    
-    if (selectedProfileIds.length === 0) {
-      setPosts([]);
-      return;
-    }
-    
-    setLoading(true);
-    fetch(`${BACKEND_URL}/api/analytics/posts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        profileIds: selectedProfileIds,
-        startDate,
-        endDate,
-      }),
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      setPosts(data);
-    })
-    .catch(console.error)
-    .finally(() => setLoading(false));
-  }, [selectedProfileIds, startDate, endDate]);
+  // --- React Query Implementation ---
+  const { data: posts = [], isLoading: loading } = useQuery({
+    queryKey: ["posts", selectedProfileIds, startDate, endDate],
+    queryFn: fetchPostsData,
+    enabled: selectedProfileIds.length > 0, // Only fetch if profiles are selected
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
 
   useEffect(() => {
     setCurrentPage(1);
@@ -120,9 +115,10 @@ export default function PostInsightsTab({
   ]);
 
   const uniqueAuthors = Array.from(
-    new Set(posts.map((p) => p.authorName).filter(Boolean)),
+    new Set((posts as PostData[]).map((p) => p.authorName).filter(Boolean)),
   );
-  const filteredPosts = posts
+  
+  const filteredPosts = (posts as PostData[])
     .filter((post) => {
       if (sourceFilter !== "all" && post.profileId !== sourceFilter)
         return false;

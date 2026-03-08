@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   LineChart,
   Line,
@@ -10,7 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { METRIC_CONFIG, MetricKey, AggregatedData } from "../types";
+import { METRIC_CONFIG, MetricKey } from "../types";
 import DateRangePicker from "../../components/DateRangePicker";
 import {
   Settings2,
@@ -18,7 +19,6 @@ import {
   TrendingDown,
   Calendar,
   AlertTriangle,
-  X,
 } from "lucide-react";
 
 const CustomXAxisTick = ({ x, y, payload, index }: any) => {
@@ -53,6 +53,23 @@ const CustomXAxisTick = ({ x, y, payload, index }: any) => {
   );
 };
 
+// --- React Query Fetch Function ---
+const fetchAggregatedData = async ({ queryKey }: any) => {
+  const [_key, profileIds, startDate, endDate] = queryKey;
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  
+  const res = await fetch(`${BACKEND_URL}/api/analytics/aggregate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ profileIds, startDate, endDate }),
+  });
+  
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch data from backend");
+  return data;
+};
+
 export default function OverviewTab({
   selectedProfileIds,
   activePlatform,
@@ -65,53 +82,17 @@ export default function OverviewTab({
   const initStart = new Date();
   initStart.setDate(initStart.getDate() - 30);
 
-  const [startDate, setStartDate] = useState(
-    initStart.toISOString().split("T")[0],
-  );
+  const [startDate, setStartDate] = useState(initStart.toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState(initEnd.toISOString().split("T")[0]);
-
-  const [aggData, setAggData] = useState<AggregatedData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activeMetric, setActiveMetric] = useState<MetricKey>("netFollowers");
-  const [toastError, setToastError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    
-    if (selectedProfileIds.length === 0) {
-      setAggData(null);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    fetch(`${BACKEND_URL}/api/analytics/aggregate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        profileIds: selectedProfileIds,
-        startDate,
-        endDate,
-      }),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok)
-          throw new Error(data.error || "Failed to fetch data from backend");
-        return data;
-      })
-      .then((data) => {
-        setAggData(data);
-        setToastError(null);
-      })
-      .catch((error) => {
-        console.error(error);
-        setToastError(error.message);
-        setTimeout(() => setToastError(null), 5000);
-      })
-      .finally(() => setLoading(false));
-  }, [selectedProfileIds, startDate, endDate]);
+  // --- React Query Implementation ---
+  const { data: aggData, isLoading: loading, error } = useQuery({
+    queryKey: ["aggregate", selectedProfileIds, startDate, endDate],
+    queryFn: fetchAggregatedData,
+    enabled: selectedProfileIds.length > 0, // Only fetch if profiles are selected
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -143,9 +124,9 @@ export default function OverviewTab({
     );
   }
 
-  const hasData = aggData && aggData.timeSeries.length > 0;
+  const hasData = aggData && aggData.timeSeries && aggData.timeSeries.length > 0;
   const config = METRIC_CONFIG[activeMetric];
-  const ChartComponent = config.type === "area" ? AreaChart : LineChart;
+  const ChartComponent = config?.type === "area" ? AreaChart : LineChart;
 
   return (
     <div className="space-y-6">
@@ -408,18 +389,13 @@ export default function OverviewTab({
           </div>
         </>
       )}
-      {toastError && (
+
+      {error && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-red-600 text-white px-5 py-3.5 rounded-xl shadow-2xl animate-in slide-in-from-bottom-5 fade-in duration-300">
           <AlertTriangle size={20} className="flex-shrink-0" />
           <span className="text-sm font-semibold tracking-wide">
-            {toastError}
+            {error instanceof Error ? error.message : "Failed to fetch data"}
           </span>
-          <button
-            onClick={() => setToastError(null)}
-            className="ml-4 text-white/70 hover:text-white hover:bg-white/10 p-1 rounded-full transition-colors"
-          >
-            <X size={16} />
-          </button>
         </div>
       )}
     </div>
