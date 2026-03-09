@@ -1,27 +1,39 @@
-'use client';
+"use client";
 
-import { usePathname } from 'next/navigation';
-import Sidebar from './Sidebar';
-import Topbar from './Topbar';
-import GlobalSyncScreen from './GlobalSyncScreen';
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+import GlobalSyncScreen from "./GlobalSyncScreen";
 
-export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
+export default function AppLayoutWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  const isLoginPage = pathname === "/login";
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (isLoginPage) {
-    return <main className="min-h-screen bg-gray-50 dark:bg-gray-950">{children}</main>;
+    return (
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        {children}
+      </main>
+    );
   }
-  
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fa] dark:bg-gray-950 transition-colors">
-      <Sidebar />
-      <div className="ml-64 flex flex-1 flex-col h-screen">
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+
+      <div
+        className={`flex flex-1 flex-col h-screen min-w-0 transition-all duration-300 ${isCollapsed ? "ml-20" : "ml-64"}`}
+      >
         <Topbar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <GlobalSyncScreen>
-            {children}
-          </GlobalSyncScreen>
+
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+          <GlobalSyncScreen>{children}</GlobalSyncScreen>
         </main>
       </div>
     </div>

@@ -1,63 +1,95 @@
-'use client';
+// src/app/components/Sidebar.tsx
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  BarChart2, 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  BarChart2,
   BarChart3,
-  CalendarDays, 
-  Inbox, 
   Settings,
-  Sparkles
-} from 'lucide-react';
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Web Traffic', href: '/traffic', icon: BarChart3 }, 
-  { name: 'Reports', href: '/reports', icon: BarChart2 },
-  // { name: 'Schedule', href: '/schedule', icon: CalendarDays },
-  // { name: 'Smart Box', href: '/smart-box', icon: Inbox },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Web Traffic", href: "/traffic", icon: BarChart3 },
+  { name: "Reports", href: "/reports", icon: BarChart2 },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean;
+  setIsCollapsed: (val: boolean) => void;
+}
+
+export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 transition-colors duration-200">
+    <aside
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 transition-all duration-300 ${isCollapsed ? "w-20" : "w-64"}`}
+    >
       {/* Logo Area */}
-      <div className="flex h-16 items-center gap-2 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
-          <Sparkles size={18} />
+      <div className="flex h-16 items-center px-4 overflow-hidden">
+        <div
+          className={`flex items-center gap-2 ${isCollapsed ? "justify-center w-full" : ""}`}
+        >
+          <div className="flex h-8 w-8 min-w-[32px] items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
+            <Sparkles size={18} />
+          </div>
+          {!isCollapsed && (
+            <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
+              SocialMetrics
+            </span>
+          )}
         </div>
-        <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-          SocialMetrics
-        </span>
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 space-y-1 px-4 py-6">
+      <nav className="flex-1 space-y-1 px-3 py-6 overflow-hidden">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const Icon = item.icon;
-          
+
           return (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
-                isActive 
-                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400' 
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
-              }`}
+              title={isCollapsed ? item.name : undefined}
+              className={`flex items-center rounded-xl py-3 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+              } ${isCollapsed ? "justify-center px-0" : "gap-3 px-4"}`}
             >
-              <Icon size={20} className={isActive ? 'text-indigo-700 dark:text-indigo-400' : ''} />
-              {item.name}
+              <Icon
+                size={20}
+                className={
+                  isActive
+                    ? "text-indigo-700 dark:text-indigo-400 min-w-[20px]"
+                    : "min-w-[20px]"
+                }
+              />
+              {!isCollapsed && (
+                <span className="whitespace-nowrap">{item.name}</span>
+              )}
             </Link>
           );
         })}
       </nav>
+
+      {/* Collapse Toggle */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="flex w-full items-center justify-center rounded-xl p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors"
+        >
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
+      </div>
     </aside>
   );
 }
