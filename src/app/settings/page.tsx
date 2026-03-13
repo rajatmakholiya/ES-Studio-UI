@@ -30,7 +30,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 export default function SettingsPage() {
   const router = useRouter();
 
-  const [connected, setConnected] = useState({ meta: false, instagram: true });
+  const [connected, setConnected] = useState({ meta: false, instagram: false });
   const [isSdkLoaded, setIsSdkLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isManualSyncing, setIsManualSyncing] = useState(false);
@@ -43,8 +43,15 @@ export default function SettingsPage() {
   } | null>(null);
 
   const [activeProfiles, setActiveProfiles] = useState<any[]>([]);
+  
+  // Facebook states
   const [availablePages, setAvailablePages] = useState<any[]>([]);
   const [selectedPages, setSelectedPages] = useState<any[]>([]);
+  
+  // Instagram states
+  const [availableIgAccounts, setAvailableIgAccounts] = useState<any[]>([]);
+  const [selectedIgAccounts, setSelectedIgAccounts] = useState<any[]>([]);
+
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
@@ -87,10 +94,9 @@ export default function SettingsPage() {
           const profiles = await res.json();
           if (Array.isArray(profiles)) {
             setActiveProfiles(profiles);
-            const hasMeta = profiles.some(
-              (p: any) => p.platform === "facebook",
-            );
-            setConnected((prev) => ({ ...prev, meta: hasMeta }));
+            const hasMeta = profiles.some((p: any) => p.platform === "facebook");
+            const hasIg = profiles.some((p: any) => p.platform === "instagram");
+            setConnected((prev) => ({ ...prev, meta: hasMeta, instagram: hasIg }));
           }
         }
       } catch (err) {}
@@ -118,6 +124,13 @@ export default function SettingsPage() {
               if (data.pages) {
                 setAvailablePages(data.pages);
                 setSelectedPages(data.pages);
+              }
+              if (data.igAccounts) {
+                setAvailableIgAccounts(data.igAccounts);
+                setSelectedIgAccounts(data.igAccounts);
+              }
+              
+              if (data.pages?.length > 0 || data.igAccounts?.length > 0) {
                 setShowModal(true);
               }
               setIsLoading(false);
@@ -145,23 +158,28 @@ export default function SettingsPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ selectedPages }),
+          body: JSON.stringify({ selectedPages, selectedIgAccounts }),
         },
       );
 
       if (response.ok) {
-        const totalEstimatedSeconds = selectedPages.length * 3 * 6;
+        const totalAccounts = selectedPages.length + selectedIgAccounts.length;
+        const totalEstimatedSeconds = totalAccounts * 3 * 6;
         const etaMinutes = Math.max(1, Math.ceil(totalEstimatedSeconds / 60));
 
         setSyncStatus({
           isSyncing: true,
           etaMinutes,
-          pageCount: selectedPages.length,
+          pageCount: totalAccounts,
         });
+        
         setAvailablePages([]);
         setSelectedPages([]);
+        setAvailableIgAccounts([]);
+        setSelectedIgAccounts([]);
         setShowModal(false);
-        setConnected({ ...connected, meta: true });
+        
+        setConnected({ ...connected, meta: true, instagram: true });
 
         const res = await fetch(`${BACKEND_URL}/api/analytics/profiles/list`, {
           credentials: "include",
@@ -206,11 +224,11 @@ export default function SettingsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ deleteData: deleteDataOnDisconnect }),
+        body: JSON.stringify({ deleteData: deleteDataOnDisconnect, platform: "all" }),
       });
 
       if (response.ok) {
-        setConnected({ ...connected, meta: false });
+        setConnected({ ...connected, meta: false, instagram: false });
         setActiveProfiles([]);
         setShowDisconnectModal(false);
         setDeleteDataOnDisconnect(false);
@@ -240,14 +258,37 @@ export default function SettingsPage() {
     });
   };
 
+  const toggleIgSelection = (account: any) => {
+    setSelectedIgAccounts((prev) => {
+      const exists = prev.find((p) => p.id === account.id);
+      return exists ? prev.filter((p) => p.id !== account.id) : [...prev, account];
+    });
+  };
+
   const handleSelectAll = () => {
-    if (selectedPages.length === availablePages.length) setSelectedPages([]);
-    else setSelectedPages([...availablePages]);
+    const allSelected = 
+      selectedPages.length === availablePages.length && 
+      selectedIgAccounts.length === availableIgAccounts.length;
+
+    if (allSelected) {
+      setSelectedPages([]);
+      setSelectedIgAccounts([]);
+    } else {
+      setSelectedPages([...availablePages]);
+      setSelectedIgAccounts([...availableIgAccounts]);
+    }
   };
 
   const filteredPages = availablePages.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+  
+  const filteredIgAccounts = availableIgAccounts.filter((p) =>
+    (p.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
+    (p.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+  );
+
+  const totalSelected = selectedPages.length + selectedIgAccounts.length;
 
   const errorProfiles = activeProfiles.filter(
     (p) => p.syncState === "FAILED" && p.lastSyncError,
@@ -268,7 +309,7 @@ export default function SettingsPage() {
           <div className="flex-1">
             <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300">Data Sync in Progress</h3>
             <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-              We are currently downloading historical data for {syncStatus.pageCount} page(s). 
+              We are currently downloading historical data for {syncStatus.pageCount} account(s). 
               This happens in the background to respect platform rate limits.
             </p>
             <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-500 mt-3">
@@ -288,9 +329,9 @@ export default function SettingsPage() {
               <AlertCircle size={20} />
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-bold text-red-900 dark:text-red-300">Action Required: Facebook API Issues</h3>
+              <h3 className="text-sm font-bold text-red-900 dark:text-red-300">Action Required: API Issues</h3>
               <p className="text-xs text-red-700 dark:text-red-400 mt-1 mb-3">
-                Facebook blocked us from fetching data for the following pages. This usually happens if Two-Factor Authentication (2FA) is required by the Page's Business Manager, or if you lack sufficient Admin permissions.
+                Meta blocked us from fetching data for the following pages. This usually happens if Two-Factor Authentication (2FA) is required, or if you lack sufficient Admin permissions.
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                 {errorProfiles.map(profile => (
@@ -312,6 +353,7 @@ export default function SettingsPage() {
         <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
           <div className="flex flex-col divide-y divide-gray-50 dark:divide-gray-800/50">
 
+            {/* FACEBOOK SECTION */}
             <div className={`p-6 transition-colors ${connected.meta ? 'bg-blue-50/30 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-900'}`}>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
@@ -334,7 +376,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                {!connected.meta ? (
+                {!connected.meta && !connected.instagram ? (
                   <button 
                     onClick={handleConnect}
                     disabled={!isSdkLoaded || isLoading}
@@ -345,41 +387,47 @@ export default function SettingsPage() {
                   </button>
                 ) : (
                   <div className="flex items-center gap-3">
-                    {/* <button 
-                      onClick={handleManualSync}
-                      disabled={isManualSyncing || syncStatus?.isSyncing}
-                      className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-colors disabled:opacity-50"
-                    >
-                      <RefreshCw size={14} className={isManualSyncing || syncStatus?.isSyncing ? "animate-spin text-blue-600" : ""} />
-                      {isManualSyncing || syncStatus?.isSyncing ? "Syncing..." : "Sync Now"}
-                    </button> */}
                     <button 
                       onClick={() => setShowDisconnectModal(true)}
                       className="rounded-xl border border-red-200 dark:border-red-900/30 bg-white dark:bg-gray-800 px-5 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 shadow-sm transition-colors flex items-center gap-2"
                     >
-                      Disconnect
+                      Disconnect All
                     </button>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] text-white shadow-sm">
+            {/* INSTAGRAM SECTION */}
+            <div className={`p-6 transition-colors ${connected.instagram ? 'bg-fuchsia-50/30 dark:bg-fuchsia-900/10' : 'bg-white dark:bg-gray-900'}`}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] text-white shadow-sm shrink-0">
                     <Instagram size={24} />
                   </div>
-                  <div>
+                  <div className="w-full max-w-lg">
                     <h3 className="text-sm font-bold text-gray-900 dark:text-white">Instagram Professional</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Requires a connected Facebook Page.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Track followers, reach, and profile views.</p>
+                    
+                    {connected.instagram ? (
+                      <span className="mt-2 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-green-600 dark:text-green-500">
+                        <CheckCircle2 size={14} /> Tracking {activeProfiles.filter(p => p.platform === 'instagram').length} Account(s)
+                      </span>
+                    ) : (
+                      <span className="mt-2 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-amber-500">
+                        <AlertCircle size={14} /> Not Connected
+                      </span>
+                    )}
                   </div>
                 </div>
-                <button className="rounded-full bg-gray-900 dark:bg-white px-5 py-2 text-sm font-bold text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
-                  Connect
-                </button>
+
+                {!connected.meta && !connected.instagram && (
+                   <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                     Connect via Meta
+                   </span>
+                )}
               </div>
-            </div> */}
+            </div>
 
           </div>
         </div>
@@ -411,7 +459,7 @@ export default function SettingsPage() {
             <div className="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
               <h3 className="font-bold text-xl text-gray-900 dark:text-white">Disconnect Meta Accounts</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                Are you sure you want to disconnect? Your automated data syncing will stop immediately.
+                Are you sure you want to disconnect? Your automated data syncing will stop immediately for all Facebook and Instagram pages.
               </p>
             </div>
             
@@ -479,30 +527,66 @@ export default function SettingsPage() {
                 />
               </div>
               <button onClick={handleSelectAll} className="flex items-center gap-2 w-full px-2 py-1 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                {selectedPages.length === availablePages.length ? <CheckSquare size={16} className="text-blue-600 dark:text-blue-400"/> : <Square size={16} />}
-                {selectedPages.length === availablePages.length ? "Deselect All Pages" : "Select All Pages"}
+                {selectedPages.length === availablePages.length && selectedIgAccounts.length === availableIgAccounts.length ? <CheckSquare size={16} className="text-blue-600 dark:text-blue-400"/> : <Square size={16} />}
+                {selectedPages.length === availablePages.length && selectedIgAccounts.length === availableIgAccounts.length ? "Deselect All Accounts" : "Select All Accounts"}
               </button>
             </div>
 
-            <div className="overflow-y-auto p-3 space-y-1 flex-1 custom-scrollbar bg-gray-50/30 dark:bg-gray-900">
-              {filteredPages.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">No pages found.</div>
+            <div className="overflow-y-auto p-3 space-y-4 flex-1 custom-scrollbar bg-gray-50/30 dark:bg-gray-900">
+              {filteredPages.length === 0 && filteredIgAccounts.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">No accounts found.</div>
               ) : (
-                filteredPages.map(page => {
-                  const isSelected = selectedPages.some(p => p.id === page.id);
-                  return (
-                    <button key={page.id} onClick={() => toggleSelection(page)} className={`flex items-center gap-4 w-full text-left px-4 py-3 text-sm transition-all rounded-xl border ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-gray-900 dark:text-white shadow-sm' : 'bg-white dark:bg-gray-800 border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-200 dark:hover:border-gray-600'}`}>
-                      {isSelected ? <CheckSquare size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0"/> : <Square size={18} className="text-gray-300 dark:text-gray-600 flex-shrink-0"/>}
-                      <span className={`truncate flex-1 ${isSelected ? 'font-bold' : 'font-medium'}`}>{page.name}</span>
-                    </button>
-                  );
-                })
+                <>
+                  {/* Facebook Pages Section */}
+                  {filteredPages.length > 0 && (
+                    <div className="space-y-1">
+                      <h4 className="px-2 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">Facebook Pages</h4>
+                      {filteredPages.map((page) => {
+                        const isSelected = selectedPages.some((p) => p.id === page.id);
+                        return (
+                          <button key={page.id} onClick={() => toggleSelection(page)} className={`flex items-center gap-4 w-full text-left px-4 py-3 text-sm transition-all rounded-xl border ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-gray-900 dark:text-white shadow-sm' : 'bg-white dark:bg-gray-800 border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-200 dark:hover:border-gray-600'}`}>
+                            {isSelected ? <CheckSquare size={18} className="text-blue-600 flex-shrink-0"/> : <Square size={18} className="text-gray-300 flex-shrink-0"/>}
+                            <div className="flex-1 truncate">
+                              <span className={`block ${isSelected ? 'font-bold' : 'font-medium'}`}>{page.name}</span>
+                            </div>
+                            <Facebook size={16} className="text-[#1877F2] opacity-70" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Instagram Accounts Section */}
+                  {filteredIgAccounts.length > 0 && (
+                    <div className="space-y-1 mt-4">
+                      <h4 className="px-2 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">Instagram Accounts</h4>
+                      {filteredIgAccounts.map((ig) => {
+                        const isSelected = selectedIgAccounts.some((p) => p.id === ig.id);
+                        return (
+                          <button key={ig.id} onClick={() => toggleIgSelection(ig)} className={`flex items-center gap-4 w-full text-left px-4 py-3 text-sm transition-all rounded-xl border ${isSelected ? 'bg-fuchsia-50/50 dark:bg-fuchsia-900/20 border-fuchsia-200 dark:border-fuchsia-800 text-gray-900 dark:text-white shadow-sm' : 'bg-white dark:bg-gray-800 border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-200 dark:hover:border-gray-600'}`}>
+                            {isSelected ? <CheckSquare size={18} className="text-fuchsia-600 flex-shrink-0"/> : <Square size={18} className="text-gray-300 flex-shrink-0"/>}
+                            {ig.profile_picture_url ? (
+                               <img src={ig.profile_picture_url} alt="" className="w-6 h-6 rounded-full border border-gray-200" />
+                            ) : (
+                               <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0"></div>
+                            )}
+                            <div className="flex-1 truncate">
+                              <span className={`block ${isSelected ? 'font-bold' : 'font-medium'}`}>{ig.name || ig.username}</span>
+                              <span className="text-xs text-gray-500">@{ig.username}</span>
+                            </div>
+                            <Instagram size={16} className="text-[#E1306C] opacity-70" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               )}
             </div>
             
             <div className="p-6 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
-              <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{selectedPages.length} selected</span>
-              <button onClick={handleConfirmSelection} disabled={selectedPages.length === 0 || isLoading} className="flex items-center gap-2 rounded-xl bg-[#1877F2] px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#166fe5] transition-all disabled:opacity-50">
+              <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{totalSelected} selected</span>
+              <button onClick={handleConfirmSelection} disabled={totalSelected === 0 || isLoading} className="flex items-center gap-2 rounded-xl bg-[#1877F2] px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#166fe5] transition-all disabled:opacity-50">
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> : "Import Selected"}
               </button>
             </div>
