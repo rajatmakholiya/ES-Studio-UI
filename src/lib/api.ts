@@ -43,7 +43,7 @@ export async function logoutUser() {
 interface PageInfo {
   pageName: string;
   category: string;
-  team?: string;
+  team?: string | null;
 }
 export async function fetchPageMappings(): Promise<MappingEntry[]> {
   try {

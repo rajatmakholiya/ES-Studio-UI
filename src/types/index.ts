@@ -52,7 +52,7 @@ export interface DailyMetric {
 export interface AggregatedPageData {
   pageName: string;
   category: string;
-  team?: string;
+  team?: string | null;
   totals: {
     sessions: number;
     pageviews: number;
