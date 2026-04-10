@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRevenueMetrics, RevenueMetricRow } from "@/lib/api";
 import {
@@ -16,6 +16,10 @@ import {
   BookOpen,
   Type,
   Gift,
+  Search,
+  CheckSquare,
+  Square,
+  Filter,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -118,8 +122,18 @@ function buildDailyProgression(
   const sortedDates = Array.from(dateMap.keys()).sort();
   const chartData = sortedDates.map((date) => {
     const dayMap = dateMap.get(date)!;
+    
+    // Format date as dd.mm.yyyy in IST
+    const dateObj = new Date(date);
+    const formattedDate = dateObj.toLocaleDateString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).replace(/\//g, ".");
+
     const entry: Record<string, string | number> = {
-      date: date.slice(5), // MM-DD for compact labels
+      date: formattedDate,
     };
     for (const key of allKeys) {
       entry[key] = Math.round((dayMap.get(key) || 0) * 100) / 100;
@@ -137,7 +151,7 @@ function buildDailyProgression(
   return { chartData, keys };
 }
 
-/* ─── Custom Tooltip for Line Charts ─── */
+/* ─── Custom Tooltip for Line Charts (all lines) ─── */
 function LineTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const sorted = [...payload].sort((a: any, b: any) => (Number(b.value) || 0) - (Number(a.value) || 0));
@@ -160,6 +174,25 @@ function LineTooltip({ active, payload, label }: any) {
         <span>Total</span>
         <span>{fmt(total)}</span>
       </div>
+    </div>
+  );
+}
+
+/* ─── Custom Tooltip for Page-Wise Line Chart (single hovered line only) ─── */
+function SingleLineTooltip({ active, payload, label, hoveredKey }: any) {
+  if (!active || !payload?.length || !hoveredKey) return null;
+  const entry = payload.find((p: any) => p.dataKey === hoveredKey);
+  if (!entry || !Number(entry.value)) return null;
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white px-3 py-2.5 shadow-lg dark:border-gray-700 dark:bg-gray-800 min-w-[160px] animate-in fade-in zoom-in-95 duration-200">
+      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+      <div className="flex items-center gap-2">
+        <span className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+        <span className="text-xs font-semibold truncate max-w-[160px]" style={{ color: entry.color }}>
+          {entry.dataKey}
+        </span>
+      </div>
+      <p className="text-base font-bold text-gray-900 dark:text-white mt-0.5">{fmt(entry.value)}</p>
     </div>
   );
 }
@@ -341,6 +374,11 @@ export default function RevenuePage() {
   const [startDate, setStartDate] = useState(defaults.startDate);
   const [endDate, setEndDate] = useState(defaults.endDate);
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
+  const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set());
+  const [isPageFilterOpen, setIsPageFilterOpen] = useState(false);
+  const [pageSearchQuery, setPageSearchQuery] = useState("");
+  const [hoveredPageKey, setHoveredPageKey] = useState<string | null>(null);
+  const pageFilterRef = useRef<HTMLDivElement>(null);
 
   const { data: rawRows = [], isLoading } = useQuery({
     queryKey: ["revenue-metrics", startDate, endDate],
@@ -348,7 +386,39 @@ export default function RevenuePage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const teamGroups = useMemo(() => buildTeamGroups(rawRows), [rawRows]);
+  /* Derive all unique page names from the data */
+  const allPageNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const row of rawRows) names.add(row.pageName);
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+  }, [rawRows]);
+
+  /* Auto-select all pages when data first loads or data changes */
+  useEffect(() => {
+    if (allPageNames.length > 0 && selectedPages.size === 0) {
+      setSelectedPages(new Set(allPageNames));
+    }
+  }, [allPageNames]);
+
+  /* Close page filter dropdown when clicking outside */
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (pageFilterRef.current && !pageFilterRef.current.contains(e.target as Node)) {
+        setIsPageFilterOpen(false);
+        setPageSearchQuery("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* Filter rows by selected pages */
+  const filteredRows = useMemo(() => {
+    if (selectedPages.size === 0 || selectedPages.size === allPageNames.length) return rawRows;
+    return rawRows.filter((row) => selectedPages.has(row.pageName));
+  }, [rawRows, selectedPages, allPageNames.length]);
+
+  const teamGroups = useMemo(() => buildTeamGroups(filteredRows), [filteredRows]);
 
   const grandTotal = useMemo(() => {
     const t: SourceTotals = { bonus: 0, photo: 0, reel: 0, story: 0, text: 0, total: 0 };
@@ -388,9 +458,9 @@ export default function RevenuePage() {
   }, [teamGroups]);
 
   /* Daily progression — team-wise */
-  const teamProgression = useMemo(() => buildDailyProgression(rawRows, "team"), [rawRows]);
+  const teamProgression = useMemo(() => buildDailyProgression(filteredRows, "team"), [filteredRows]);
   /* Daily progression — page-wise */
-  const pageProgression = useMemo(() => buildDailyProgression(rawRows, "pageName"), [rawRows]);
+  const pageProgression = useMemo(() => buildDailyProgression(filteredRows, "pageName"), [filteredRows]);
 
   const toggleTeam = (team: string) => {
     setExpandedTeams((prev) => {
@@ -407,6 +477,32 @@ export default function RevenuePage() {
   const handleExport = useCallback(() => {
     exportTableAsCSV(teamGroups, grandTotal, startDate, endDate);
   }, [teamGroups, grandTotal, startDate, endDate]);
+
+  /* Page filter helpers */
+  const filteredPageNames = useMemo(() => {
+    if (!pageSearchQuery) return allPageNames;
+    const q = pageSearchQuery.toLowerCase();
+    return allPageNames.filter((name) => name.toLowerCase().includes(q));
+  }, [allPageNames, pageSearchQuery]);
+
+  const isAllPagesSelected = selectedPages.size === allPageNames.length;
+
+  const togglePageSelection = (pageName: string) => {
+    setSelectedPages((prev) => {
+      const next = new Set(prev);
+      if (next.has(pageName)) next.delete(pageName);
+      else next.add(pageName);
+      return next;
+    });
+  };
+
+  const toggleSelectAllPages = () => {
+    if (isAllPagesSelected) {
+      setSelectedPages(new Set());
+    } else {
+      setSelectedPages(new Set(allPageNames));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -439,9 +535,9 @@ export default function RevenuePage() {
         </div>
       </div>
 
-      {/* Date Pickers + Summary Cards */}
+      {/* Date Pickers + Page Filter + Summary Cards */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
               From
@@ -463,6 +559,106 @@ export default function RevenuePage() {
               onChange={(e) => setEndDate(e.target.value)}
               className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             />
+          </div>
+
+          {/* Page Filter Dropdown */}
+          <div className="relative" ref={pageFilterRef}>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+              Pages
+            </label>
+            <button
+              onClick={() => setIsPageFilterOpen(!isPageFilterOpen)}
+              className="flex items-center justify-between min-w-[220px] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <span className="flex items-center gap-2 truncate pr-2">
+                <Filter size={14} className="text-gray-400 flex-shrink-0" />
+                {selectedPages.size === 0
+                  ? "Select Pages..."
+                  : isAllPagesSelected
+                    ? `All Pages (${allPageNames.length})`
+                    : `${selectedPages.size} of ${allPageNames.length} Pages`}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-gray-400 flex-shrink-0 transition-transform ${isPageFilterOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isPageFilterOpen && (
+              <div className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-30 overflow-hidden flex flex-col">
+                {/* Search */}
+                <div className="p-2 border-b border-gray-100 dark:border-gray-800">
+                  <div className="relative">
+                    <Search
+                      size={14}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search pages..."
+                      value={pageSearchQuery}
+                      onChange={(e) => setPageSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md outline-none focus:ring-1 focus:ring-indigo-500 transition-shadow text-gray-700 dark:text-gray-200"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                {/* Select All */}
+                {filteredPageNames.length > 0 && (
+                  <div className="px-2 py-1.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                    <button
+                      onClick={toggleSelectAllPages}
+                      className="flex items-center gap-2 w-full px-2 py-1 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                    >
+                      {isAllPagesSelected ? (
+                        <CheckSquare size={16} className="text-indigo-600 dark:text-indigo-400" />
+                      ) : (
+                        <Square size={16} className="text-gray-400 dark:text-gray-500" />
+                      )}
+                      {isAllPagesSelected ? "Deselect All" : "Select All"}
+                    </button>
+                  </div>
+                )}
+
+                {/* Page List */}
+                <div className="max-h-60 overflow-y-auto p-1.5 space-y-0.5">
+                  {filteredPageNames.length === 0 ? (
+                    <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
+                      No pages found
+                    </div>
+                  ) : (
+                    filteredPageNames.map((pageName) => {
+                      const isSelected = selectedPages.has(pageName);
+                      return (
+                        <button
+                          key={pageName}
+                          onClick={() => togglePageSelection(pageName)}
+                          className={`flex items-center gap-2 w-full text-left px-2 py-1.5 text-sm rounded-md transition-colors ${
+                            isSelected
+                              ? "bg-indigo-50/50 dark:bg-indigo-900/20 text-gray-900 dark:text-white font-semibold"
+                              : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          }`}
+                        >
+                          {isSelected ? (
+                            <CheckSquare
+                              size={16}
+                              className="text-indigo-600 dark:text-indigo-400 flex-shrink-0"
+                            />
+                          ) : (
+                            <Square
+                              size={16}
+                              className="text-gray-300 dark:text-gray-600 flex-shrink-0"
+                            />
+                          )}
+                          <span className="truncate">{pageName}</span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -681,13 +877,17 @@ export default function RevenuePage() {
                 Daily Revenue — Page Wise
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Total revenue per day, split by page
+                Total revenue per day, split by page — <span className="italic">hover over lines to see page names</span>
               </p>
             </div>
             <div className="p-4">
               <div className="h-[340px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={pageProgression.chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                  <LineChart
+                    data={pageProgression.chartData}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
+                    onMouseLeave={() => setHoveredPageKey(null)}
+                  >
                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis
                       dataKey="date"
@@ -701,17 +901,39 @@ export default function RevenuePage() {
                       tick={{ fill: "#6b7280", fontSize: 11 }}
                       tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
                     />
-                    <Tooltip content={<LineTooltip />} />
-                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 4 }} iconType="plainline" iconSize={14} />
+                    <Tooltip 
+                      isAnimationActive={false} 
+                      content={(props: any) => <SingleLineTooltip {...props} hoveredKey={hoveredPageKey} />} 
+                    />
+                    
+                    {/* Actual visible lines */}
                     {pageProgression.keys.map((key, i) => (
                       <Line
                         key={key}
                         type="monotone"
                         dataKey={key}
                         stroke={LINE_COLORS[i % LINE_COLORS.length]}
-                        strokeWidth={2}
-                        dot={pageProgression.chartData.length <= 15 ? { r: 3 } : false}
-                        activeDot={{ r: 5 }}
+                        strokeWidth={hoveredPageKey === key ? 3 : hoveredPageKey === null ? 2 : 1}
+                        strokeOpacity={hoveredPageKey === null || hoveredPageKey === key ? 1 : 0.15}
+                        dot={false}
+                        activeDot={hoveredPageKey === key ? { r: 6, strokeWidth: 2, stroke: "#fff" } : false}
+                        isAnimationActive={false}
+                      />
+                    ))}
+
+                    {/* Invisible hit-area lines for much easier hovering */}
+                    {pageProgression.keys.map((key) => (
+                      <Line
+                        key={`${key}-hover`}
+                        type="monotone"
+                        dataKey={key}
+                        stroke="transparent"
+                        strokeWidth={35}
+                        dot={false}
+                        activeDot={false}
+                        isAnimationActive={false}
+                        onMouseEnter={() => setHoveredPageKey(key)}
+                        onMouseLeave={() => setHoveredPageKey(null)}
                       />
                     ))}
                   </LineChart>
@@ -769,7 +991,7 @@ export default function RevenuePage() {
         {/* Toolbar */}
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-2">
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {isLoading ? "Loading..." : `${rawRows.length} records`}
+            {isLoading ? "Loading..." : `${filteredRows.length} records${selectedPages.size < allPageNames.length ? ` (${selectedPages.size} pages)` : ""}`}
           </span>
           <div className="flex items-center gap-2">
             <button
