@@ -14,11 +14,14 @@ export default function AppLayoutWrapper({
 }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
+  // Public pages render standalone (no sidebar/topbar/auth-gated chrome) so
+  // they remain viewable without an authenticated session.
+  const isPublicPage = pathname === "/privacy" || pathname === "/terms";
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useAuth();
 
-  if (isLoginPage) {
+  if (isLoginPage || isPublicPage) {
     return (
       <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
         {children}

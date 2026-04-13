@@ -9,7 +9,8 @@ export function useAuth() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname === "/login" || pathname === "/privacy") return;
+    // Public pages: skip auth check so they remain accessible without login.
+    if (pathname === "/login" || pathname === "/privacy" || pathname === "/terms") return;
 
     // Check auth by hitting a protected endpoint — the HttpOnly cookie
     // is sent automatically via axios withCredentials: true
