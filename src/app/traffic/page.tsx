@@ -201,6 +201,76 @@ export function MappingsView({ onBack }: { onBack: () => void }) {
     }
   };
 
+  // Dedupe the flat directory list by pageName. Multiple mapping rows for the
+  // same page (one per utmMedium group) are merged into a single row whose
+  // UTM Mediums chip list is the union of all rows' mediums.
+  const dedupedMappings = useMemo(() => {
+    const byName = new Map<string, {
+      ids: number[];
+      category: string;
+      team: string | null | undefined;
+      platform: string;
+      pageName: string;
+      utmSource: string;
+      utmMediums: string[];
+    }>();
+    mappings.forEach((m) => {
+      const key = m.pageName;
+      const existing = byName.get(key);
+      if (existing) {
+        if (m.id != null) existing.ids.push(m.id);
+        // Merge utm mediums, dedupe
+        for (const med of m.utmMediums || []) {
+          if (!existing.utmMediums.includes(med)) existing.utmMediums.push(med);
+        }
+      } else {
+        byName.set(key, {
+          ids: m.id != null ? [m.id] : [],
+          category: m.category,
+          team: m.team,
+          platform: m.platform,
+          pageName: m.pageName,
+          utmSource: m.utmSource,
+          utmMediums: [...(m.utmMediums || [])],
+        });
+      }
+    });
+    return Array.from(byName.values());
+  }, [mappings]);
+
+  const handleDeletePage = async (ids: number[]) => {
+    if (ids.length === 0) return;
+    const msg = ids.length === 1
+      ? 'Are you sure you want to delete this mapping?'
+      : `This page has ${ids.length} mapping rows (one per UTM group). Delete all of them?`;
+    if (!confirm(msg)) return;
+    try {
+      await Promise.all(ids.map((id) => deletePageMapping(id)));
+      loadMappings();
+    } catch (err) {
+      console.error('Failed to delete mapping(s)', err);
+      alert('Failed to delete mapping(s)');
+    }
+  };
+
+  const handleUpdateTeamMulti = async (
+    ids: number[],
+    currentTeam: string | null | undefined,
+  ) => {
+    if (ids.length === 0) return;
+    const updatedTeam = prompt('Enter new team name:', currentTeam || '');
+    if (updatedTeam === null) return;
+    try {
+      await Promise.all(
+        ids.map((id) => updatePageMapping(id, { team: updatedTeam.trim() || undefined })),
+      );
+      loadMappings();
+    } catch (err) {
+      console.error('Failed to update team', err);
+      alert('Failed to update team');
+    }
+  };
+
   // Dedupe mappings by pageName within each team group. The page_mappings
   // table can hold multiple rows per pageName (e.g. different utmMediums),
   // but the team assignment UI should show each page once — matching the
@@ -440,7 +510,7 @@ export function MappingsView({ onBack }: { onBack: () => void }) {
                         Loading mappings...
                       </td>
                     </tr>
-                  ) : mappings.length === 0 ? (
+                  ) : dedupedMappings.length === 0 ? (
                     <tr>
                       <td
                         colSpan={6}
@@ -450,9 +520,9 @@ export function MappingsView({ onBack }: { onBack: () => void }) {
                       </td>
                     </tr>
                   ) : (
-                    mappings.map((m) => (
+                    dedupedMappings.map((m) => (
                       <tr
-                        key={m.id || m.pageName}
+                        key={m.pageName}
                         className="hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-800 dark:text-gray-200 transition-colors"
                       >
                         <td className="px-6 py-3 font-bold">{m.category}</td>
@@ -485,14 +555,14 @@ export function MappingsView({ onBack }: { onBack: () => void }) {
                         </td>
                         <td className="px-6 py-3 text-right space-x-2">
                           <button
-                            onClick={() => handleUpdateTeam(m.id, m.team)}
+                            onClick={() => handleUpdateTeamMulti(m.ids, m.team)}
                             className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition-colors"
                             title="Edit Team"
                           >
                             <Settings className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(m.id)}
+                            onClick={() => handleDeletePage(m.ids)}
                             className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"
                             title="Delete Mapping"
                           >
