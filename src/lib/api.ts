@@ -216,12 +216,17 @@ export function processDataForDashboard(
   mappingData: MappingEntry[],
 ): AggregatedPageData[] {
   const mappingLookup: Record<string, PageInfo> = {};
+  const pageNameToTeam: Record<string, string | undefined> = {};
   for (let i = 0; i < mappingData.length; i++) {
     const entry = mappingData[i];
+    if (entry.team) {
+      pageNameToTeam[entry.pageName] = entry.team;
+    }
     for (let j = 0; j < entry.utmMediums.length; j++) {
       mappingLookup[entry.utmMediums[j]] = {
         pageName: entry.pageName,
         category: entry.category,
+        team: entry.team,
       };
     }
   }
@@ -240,11 +245,13 @@ export function processDataForDashboard(
     const mappedInfo = mappingLookup[rawMedium];
     const pageName = mappedInfo ? mappedInfo.pageName : rawMedium;
     const category = mappedInfo ? mappedInfo.category : "Other";
+    const team = pageNameToTeam[pageName] || mappedInfo?.team;
 
     if (!grouped[pageName]) {
       grouped[pageName] = {
         pageName,
         category,
+        team,
         totals: {
           sessions: 0,
           pageviews: 0,
@@ -258,6 +265,8 @@ export function processDataForDashboard(
         dailyTrend: [],
         _dailyMap: {},
       };
+    } else if (team && !grouped[pageName].team) {
+      grouped[pageName].team = team;
     }
 
     const pageEntry = grouped[pageName];
@@ -347,8 +356,12 @@ export function processAggregatedData(
   const filteredData = selectedCampaign ? rawData : rawData;
 
   const mappingLookup: Record<string, PageInfo> = {};
+  const pageNameToTeam: Record<string, string | undefined> = {};
   for (let i = 0; i < mappingData.length; i++) {
     const entry = mappingData[i];
+    if (entry.team) {
+      pageNameToTeam[entry.pageName] = entry.team;
+    }
     for (let j = 0; j < entry.utmMediums.length; j++) {
       mappingLookup[entry.utmMediums[j]] = {
         pageName: entry.pageName,
@@ -369,7 +382,7 @@ export function processAggregatedData(
     const mappedInfo = mappingLookup[rawMedium];
     const pageName = mappedInfo ? mappedInfo.pageName : rawMedium;
     const category = mappedInfo ? mappedInfo.category : "Other";
-    const team = mappedInfo?.team;
+    const team = pageNameToTeam[pageName] || mappedInfo?.team;
 
     if (!grouped[pageName]) {
       grouped[pageName] = {
@@ -389,6 +402,8 @@ export function processAggregatedData(
         dailyTrend: [],
         _dailyMap: {},
       };
+    } else if (team && !grouped[pageName].team) {
+      grouped[pageName].team = team;
     }
 
     const pageEntry = grouped[pageName];
