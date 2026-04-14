@@ -188,7 +188,9 @@ export default function CompareTab({
             </div>
             <div className="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
               <div className="flex flex-wrap gap-2.5">
-                {(Object.keys(METRIC_CONFIG) as MetricKey[]).map((key) => {
+                {(Object.keys(METRIC_CONFIG) as MetricKey[])
+                  .filter((key) => key !== "revenue")
+                  .map((key) => {
                   const itemConf = METRIC_CONFIG[key];
                   const isActive = selectedMetrics.includes(key);
 
