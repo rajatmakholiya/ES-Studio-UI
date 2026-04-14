@@ -519,3 +519,36 @@ export async function batchUpdateRevenueMappingTeam(
   const response = await apiClient.patch(`${REVENUE_URL}/mappings/batch/team`, { ids, team });
   return response.data;
 }
+
+// ---- Email Reports APIs ----
+
+export interface ReportRecipientRow {
+  id: number;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export async function fetchReportRecipients(): Promise<ReportRecipientRow[]> {
+  try {
+    const response = await apiClient.get(`/v1/email-reports/recipients`);
+    return response.data;
+  } catch (error) {
+    console.error("Fetch Recipients Error:", error);
+    return [];
+  }
+}
+
+export async function addReportRecipient(email: string): Promise<ReportRecipientRow> {
+  const response = await apiClient.post(`/v1/email-reports/recipients`, { email });
+  return response.data;
+}
+
+export async function deleteReportRecipient(id: number): Promise<void> {
+  await apiClient.delete(`/v1/email-reports/recipients/${id}`);
+}
+
+export async function sendTestReport(): Promise<{ success: boolean; message: string }> {
+  const response = await apiClient.post(`/v1/email-reports/send-test`);
+  return response.data;
+}
