@@ -154,6 +154,9 @@ export function useTrafficData() {
       queryClient.invalidateQueries({ queryKey: ["countryStats"] });
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
+    refreshMappings: () => {
+      queryClient.invalidateQueries({ queryKey: ["mappings"] });
+    },
     sync: {
       isSyncing: syncMutation.isPending,
       handleSync: () => syncMutation.mutate(),

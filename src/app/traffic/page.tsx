@@ -735,7 +735,7 @@ export default function WebTrafficPage() {
   }
 
   if (showMappings) {
-    return <MappingsView onBack={() => setShowMappings(false)} onMappingsChanged={() => trafficData.refresh()} />;
+    return <MappingsView onBack={() => setShowMappings(false)} onMappingsChanged={() => trafficData.refreshMappings()} />;
   }
 
   const {
