@@ -234,7 +234,6 @@ export function processDataForDashboard(
           mappingLookup[med] = {
             pageName: cleanPageName,
             category: (entry.category || "").trim() || "Other",
-            team: entry.team?.trim() || undefined,
           };
         }
       }
@@ -258,8 +257,7 @@ export function processDataForDashboard(
     if (!pageName) pageName = "Unknown";
     
     const category = mappedInfo ? mappedInfo.category : "Other";
-    const lookupTeam = pageNameToTeam[pageName.toLowerCase()];
-    const team = lookupTeam || mappedInfo?.team || undefined;
+    const team = pageNameToTeam[pageName.toLowerCase()] || undefined;
 
     if (!grouped[pageName]) {
       grouped[pageName] = {
@@ -388,7 +386,6 @@ export function processAggregatedData(
           mappingLookup[med] = {
             pageName: cleanPageName,
             category: (entry.category || "").trim() || "Other",
-            team: entry.team?.trim() || undefined,
           };
         }
       }
@@ -410,8 +407,7 @@ export function processAggregatedData(
     if (!pageName) pageName = "Unknown";
     
     const category = mappedInfo ? mappedInfo.category : "Other";
-    const lookupTeam = pageNameToTeam[pageName.toLowerCase()];
-    const team = lookupTeam || mappedInfo?.team || undefined;
+    const team = pageNameToTeam[pageName.toLowerCase()] || undefined;
 
     if (!grouped[pageName]) {
       grouped[pageName] = {
