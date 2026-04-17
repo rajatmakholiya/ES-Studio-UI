@@ -217,17 +217,27 @@ export function processDataForDashboard(
 ): AggregatedPageData[] {
   const mappingLookup: Record<string, PageInfo> = {};
   const pageNameToTeam: Record<string, string | undefined> = {};
+  
   for (let i = 0; i < mappingData.length; i++) {
     const entry = mappingData[i];
-    if (entry.team) {
-      pageNameToTeam[entry.pageName] = entry.team;
+    const cleanPageName = (entry.pageName || "").trim();
+    if (!cleanPageName) continue;
+    
+    if (entry.team?.trim()) {
+      pageNameToTeam[cleanPageName.toLowerCase()] = entry.team.trim();
     }
-    for (let j = 0; j < entry.utmMediums.length; j++) {
-      mappingLookup[entry.utmMediums[j]] = {
-        pageName: entry.pageName,
-        category: entry.category,
-        team: entry.team,
-      };
+    
+    if (Array.isArray(entry.utmMediums)) {
+      for (let j = 0; j < entry.utmMediums.length; j++) {
+        const med = (entry.utmMediums[j] || "").trim().toLowerCase();
+        if (med) {
+          mappingLookup[med] = {
+            pageName: cleanPageName,
+            category: (entry.category || "").trim() || "Other",
+            team: entry.team?.trim() || undefined,
+          };
+        }
+      }
     }
   }
 
@@ -241,11 +251,15 @@ export function processDataForDashboard(
 
     if (selectedCampaign && row.utm_campaign !== selectedCampaign) continue;
 
-    const rawMedium = row.utm_medium || "";
+    const rawMedium = (row.utm_medium || "").trim().toLowerCase();
     const mappedInfo = mappingLookup[rawMedium];
-    const pageName = mappedInfo ? mappedInfo.pageName : rawMedium;
+    
+    let pageName = mappedInfo ? mappedInfo.pageName : (row.utm_medium || "").trim();
+    if (!pageName) pageName = "Unknown";
+    
     const category = mappedInfo ? mappedInfo.category : "Other";
-    const team = pageNameToTeam[pageName] || mappedInfo?.team;
+    const lookupTeam = pageNameToTeam[pageName.toLowerCase()];
+    const team = lookupTeam || mappedInfo?.team || undefined;
 
     if (!grouped[pageName]) {
       grouped[pageName] = {
@@ -357,17 +371,27 @@ export function processAggregatedData(
 
   const mappingLookup: Record<string, PageInfo> = {};
   const pageNameToTeam: Record<string, string | undefined> = {};
+  
   for (let i = 0; i < mappingData.length; i++) {
     const entry = mappingData[i];
-    if (entry.team) {
-      pageNameToTeam[entry.pageName] = entry.team;
+    const cleanPageName = (entry.pageName || "").trim();
+    if (!cleanPageName) continue;
+    
+    if (entry.team?.trim()) {
+      pageNameToTeam[cleanPageName.toLowerCase()] = entry.team.trim();
     }
-    for (let j = 0; j < entry.utmMediums.length; j++) {
-      mappingLookup[entry.utmMediums[j]] = {
-        pageName: entry.pageName,
-        category: entry.category,
-        team: entry.team,
-      };
+    
+    if (Array.isArray(entry.utmMediums)) {
+      for (let j = 0; j < entry.utmMediums.length; j++) {
+        const med = (entry.utmMediums[j] || "").trim().toLowerCase();
+        if (med) {
+          mappingLookup[med] = {
+            pageName: cleanPageName,
+            category: (entry.category || "").trim() || "Other",
+            team: entry.team?.trim() || undefined,
+          };
+        }
+      }
     }
   }
 
@@ -378,11 +402,16 @@ export function processAggregatedData(
 
   for (let i = 0; i < filteredData.length; i++) {
     const row = filteredData[i];
-    const rawMedium = row.utm_medium || "";
+    const rawMedium = (row.utm_medium || "").trim().toLowerCase();
+    
     const mappedInfo = mappingLookup[rawMedium];
-    const pageName = mappedInfo ? mappedInfo.pageName : rawMedium;
+    
+    let pageName = mappedInfo ? mappedInfo.pageName : (row.utm_medium || "").trim();
+    if (!pageName) pageName = "Unknown";
+    
     const category = mappedInfo ? mappedInfo.category : "Other";
-    const team = pageNameToTeam[pageName] || mappedInfo?.team;
+    const lookupTeam = pageNameToTeam[pageName.toLowerCase()];
+    const team = lookupTeam || mappedInfo?.team || undefined;
 
     if (!grouped[pageName]) {
       grouped[pageName] = {
