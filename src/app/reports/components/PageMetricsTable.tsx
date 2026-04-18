@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Table2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Table2, ArrowUpDown, ArrowUp, ArrowDown, Download } from "lucide-react";
 
 interface PageMetric {
   profileId: string;
@@ -111,6 +111,62 @@ export default function PageMetricsTable({
       : []),
   ];
 
+  const exportCSV = () => {
+    const headers = columns.map((c) => c.label);
+    const rows: string[][] = [headers];
+
+    for (const page of sortedPages) {
+      const row: string[] = [
+        page.pageName,
+        String(page.followers),
+        String(page.impressions),
+        String(page.engagements),
+        `${page.engagementRate}%`,
+        String(page.pageViews),
+        String(page.videoViews),
+        ...(showRevenue ? [`$${page.revenue.toFixed(2)}`] : []),
+      ];
+      rows.push(row);
+    }
+
+    // Totals row
+    const totalFollowers = sortedPages.reduce((s, p) => s + p.followers, 0);
+    const totalImpressions = sortedPages.reduce((s, p) => s + p.impressions, 0);
+    const totalEngagements = sortedPages.reduce((s, p) => s + p.engagements, 0);
+    const totalPageViews = sortedPages.reduce((s, p) => s + p.pageViews, 0);
+    const totalVideoViews = sortedPages.reduce((s, p) => s + p.videoViews, 0);
+    const totalRevenue = sortedPages.reduce((s, p) => s + p.revenue, 0);
+    const engRate =
+      totalImpressions > 0
+        ? ((totalEngagements / totalImpressions) * 100).toFixed(1)
+        : "0.0";
+
+    rows.push([
+      "Total",
+      String(totalFollowers),
+      String(totalImpressions),
+      String(totalEngagements),
+      `${engRate}%`,
+      String(totalPageViews),
+      String(totalVideoViews),
+      ...(showRevenue ? [`$${totalRevenue.toFixed(2)}`] : []),
+    ]);
+
+    const csv = rows
+      .map((r) =>
+        r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `page_breakdown_${startDate}_to_${endDate}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const SortIcon = ({ columnKey }: { columnKey: SortKey }) => {
     if (sortKey !== columnKey)
       return <ArrowUpDown size={12} className="opacity-40" />;
@@ -193,18 +249,27 @@ export default function PageMetricsTable({
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-          <Table2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+      <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+            <Table2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              Page-wise Breakdown
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              Performance metrics for each selected page
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            Page-wise Breakdown
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            Performance metrics for each selected page
-          </p>
-        </div>
+        <button
+          onClick={exportCSV}
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+        >
+          <Download size={16} />
+          Export CSV
+        </button>
       </div>
 
       <div className="overflow-x-auto">
