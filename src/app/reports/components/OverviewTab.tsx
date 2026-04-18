@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { METRIC_CONFIG, MetricKey, DemographicData } from "../types";
 import DemographicsSection from "./DemographicsSection";
+import PageMetricsTable from "./PageMetricsTable";
 import DateRangePicker from "../../components/DateRangePicker";
 import {
   Settings2,
@@ -496,6 +497,16 @@ export default function OverviewTab({
             </div>
           </div>
         </>
+      )}
+
+      {/* Page-wise Breakdown Table */}
+      {hasData && (
+        <PageMetricsTable
+          selectedProfileIds={selectedProfileIds}
+          startDate={startDate}
+          endDate={endDate}
+          activePlatform={activePlatform}
+        />
       )}
 
       {/* Demographics Section */}
