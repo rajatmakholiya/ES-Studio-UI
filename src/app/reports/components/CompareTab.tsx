@@ -75,10 +75,17 @@ export default function CompareTab({
   const initStart = new Date();
   initStart.setDate(initStart.getDate() - 30);
 
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [startDate, setStartDate] = useState(
-    initStart.toISOString().split("T")[0],
+    getLocalDateString(initStart),
   );
-  const [endDate, setEndDate] = useState(initEnd.toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(getLocalDateString(initEnd));
 
   const [selectedMetrics, setSelectedMetrics] = useState<MetricKey[]>([
     "impressions",
@@ -101,8 +108,8 @@ export default function CompareTab({
       const end = new Date();
       const start = new Date();
       start.setDate(start.getDate() - days);
-      setStartDate(start.toISOString().split("T")[0]);
-      setEndDate(end.toISOString().split("T")[0]);
+      setStartDate(getLocalDateString(start));
+      setEndDate(getLocalDateString(end));
     }
   };
 

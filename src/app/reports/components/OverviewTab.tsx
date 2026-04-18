@@ -151,8 +151,15 @@ export default function OverviewTab({
   const initStart = new Date();
   initStart.setDate(initStart.getDate() - 30);
 
-  const [startDate, setStartDate] = useState(initStart.toISOString().split("T")[0]);
-  const [endDate, setEndDate] = useState(initEnd.toISOString().split("T")[0]);
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const [startDate, setStartDate] = useState(getLocalDateString(initStart));
+  const [endDate, setEndDate] = useState(getLocalDateString(initEnd));
   const [activeMetric, setActiveMetric] = useState<MetricKey>("netFollowers");
 
   // --- React Query Implementation ---
@@ -190,8 +197,8 @@ export default function OverviewTab({
       const end = new Date();
       const start = new Date();
       start.setDate(start.getDate() - days);
-      setStartDate(start.toISOString().split("T")[0]);
-      setEndDate(end.toISOString().split("T")[0]);
+      setStartDate(getLocalDateString(start));
+      setEndDate(getLocalDateString(end));
     }
   };
 

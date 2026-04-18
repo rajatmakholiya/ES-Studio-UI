@@ -84,10 +84,17 @@ export default function ProfilesTab({ profile }: { profile: Profile | null }) {
   initStart.setDate(initStart.getDate() - 30);
 
   const [preset, setPreset] = useState<string>("30");
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [startDate, setStartDate] = useState(
-    initStart.toISOString().split("T")[0],
+    getLocalDateString(initStart),
   );
-  const [endDate, setEndDate] = useState(initEnd.toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(getLocalDateString(initEnd));
 
   const [compareMode, setCompareMode] = useState<
     "previous" | "custom" | "none"
@@ -98,10 +105,10 @@ export default function ProfilesTab({ profile }: { profile: Profile | null }) {
     initCompEnd.getTime() - 1000 * 60 * 60 * 24 * 30,
   );
   const [compareStartDate, setCompareStartDate] = useState(
-    initCompStart.toISOString().split("T")[0],
+    getLocalDateString(initCompStart),
   );
   const [compareEndDate, setCompareEndDate] = useState(
-    initCompEnd.toISOString().split("T")[0],
+    getLocalDateString(initCompEnd),
   );
 
   const [sortConfig, setSortConfig] = useState<{
@@ -114,15 +121,23 @@ export default function ProfilesTab({ profile }: { profile: Profile | null }) {
   let actualCompareStart = compareStartDate;
   let actualCompareEnd = compareEndDate;
   if (compareMode === "previous") {
-    const diffTime = Math.abs(
-      new Date(endDate).getTime() - new Date(startDate).getTime(),
-    );
-    const prevEndObj = new Date(
-      new Date(startDate).getTime() - 1000 * 60 * 60 * 24,
-    );
+    // Parse start and end dates as UTC so the diff calculation matches the days difference perfectly
+    const sDate = new Date(`${startDate}T00:00:00Z`);
+    const eDate = new Date(`${endDate}T00:00:00Z`);
+    const diffTime = Math.abs(eDate.getTime() - sDate.getTime());
+    
+    const prevEndObj = new Date(sDate.getTime() - 1000 * 60 * 60 * 24);
     const prevStartObj = new Date(prevEndObj.getTime() - diffTime);
-    actualCompareStart = prevStartObj.toISOString().split("T")[0];
-    actualCompareEnd = prevEndObj.toISOString().split("T")[0];
+    
+    const getUtcDateString = (d: Date) => {
+      const year = d.getUTCFullYear();
+      const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(d.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    actualCompareStart = getUtcDateString(prevStartObj);
+    actualCompareEnd = getUtcDateString(prevEndObj);
   }
 
   // --- React Query: Fetch Current Period ---
@@ -184,8 +199,8 @@ export default function ProfilesTab({ profile }: { profile: Profile | null }) {
       const end = new Date();
       const start = new Date();
       start.setDate(start.getDate() - days);
-      setStartDate(start.toISOString().split("T")[0]);
-      setEndDate(end.toISOString().split("T")[0]);
+      setStartDate(getLocalDateString(start));
+      setEndDate(getLocalDateString(end));
     }
   };
 

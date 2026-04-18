@@ -37,12 +37,19 @@ export default function DateRangePicker({ startDate, endDate, onChange }: DateRa
     setIsOpen(false);
   };
 
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const setPreset = (days: number) => {
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - days);
-    setTempStart(start.toISOString().split('T')[0]);
-    setTempEnd(end.toISOString().split('T')[0]);
+    setTempStart(getLocalDateString(start));
+    setTempEnd(getLocalDateString(end));
   };
 
   return (
