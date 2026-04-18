@@ -122,7 +122,7 @@ function buildDailyProgression(
   const sortedDates = Array.from(dateMap.keys()).sort();
   const chartData = sortedDates.map((date) => {
     const dayMap = dateMap.get(date)!;
-    
+
     // Format date as dd.mm.yyyy in IST
     const dateObj = new Date(date);
     const formattedDate = dateObj.toLocaleDateString("en-GB", {
@@ -248,11 +248,17 @@ function buildTeamGroups(rows: RevenueMetricRow[]): TeamGroup[] {
 }
 
 function getDefaultDates() {
+  const toLocalDate = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), 1);
   return {
-    startDate: start.toISOString().split("T")[0],
-    endDate: now.toISOString().split("T")[0],
+    startDate: toLocalDate(start),
+    endDate: toLocalDate(now),
   };
 }
 
@@ -650,11 +656,10 @@ export default function RevenuePage() {
                         <button
                           key={pageName}
                           onClick={() => togglePageSelection(pageName)}
-                          className={`flex items-center gap-2 w-full text-left px-2 py-1.5 text-sm rounded-md transition-colors ${
-                            isSelected
+                          className={`flex items-center gap-2 w-full text-left px-2 py-1.5 text-sm rounded-md transition-colors ${isSelected
                               ? "bg-indigo-50/50 dark:bg-indigo-900/20 text-gray-900 dark:text-white font-semibold"
                               : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-                          }`}
+                            }`}
                         >
                           {isSelected ? (
                             <CheckSquare
@@ -917,11 +922,11 @@ export default function RevenuePage() {
                       tick={{ fill: "#6b7280", fontSize: 11 }}
                       tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
                     />
-                    <Tooltip 
-                      isAnimationActive={false} 
-                      content={(props: any) => <SingleLineTooltip {...props} hoveredKey={hoveredPageKey} />} 
+                    <Tooltip
+                      isAnimationActive={false}
+                      content={(props: any) => <SingleLineTooltip {...props} hoveredKey={hoveredPageKey} />}
                     />
-                    
+
                     {/* Actual visible lines */}
                     {pageProgression.keys.map((key, i) => (
                       <Line
@@ -1036,104 +1041,104 @@ export default function RevenuePage() {
         </div>
 
         <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
-              <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                Team / Page
-              </th>
-              <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                <span className="inline-flex items-center gap-1">
-                  <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.bonus }} />
-                  Bonus
-                </span>
-              </th>
-              <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                <span className="inline-flex items-center gap-1">
-                  <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.photo }} />
-                  Photo
-                </span>
-              </th>
-              <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                <span className="inline-flex items-center gap-1">
-                  <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.reel }} />
-                  Reel
-                </span>
-              </th>
-              <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                <span className="inline-flex items-center gap-1">
-                  <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.story }} />
-                  Story
-                </span>
-              </th>
-              <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                <span className="inline-flex items-center gap-1">
-                  <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.text }} />
-                  Text
-                </span>
-              </th>
-              <th className="px-3 py-3 text-right font-medium text-green-600 dark:text-green-400">
-                Total
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-                    Loading revenue data...
-                  </div>
-                </td>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
+                <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Team / Page
+                </th>
+                <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.bonus }} />
+                    Bonus
+                  </span>
+                </th>
+                <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.photo }} />
+                    Photo
+                  </span>
+                </th>
+                <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.reel }} />
+                    Reel
+                  </span>
+                </th>
+                <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.story }} />
+                    Story
+                  </span>
+                </th>
+                <th className="px-3 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: SOURCE_COLORS.text }} />
+                    Text
+                  </span>
+                </th>
+                <th className="px-3 py-3 text-right font-medium text-green-600 dark:text-green-400">
+                  Total
+                </th>
               </tr>
-            ) : teamGroups.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
-                  No revenue data found for the selected date range.
-                </td>
-              </tr>
-            ) : (
-              <>
-                {teamGroups.map((group) => {
-                  const isExpanded = expandedTeams.has(group.team);
-                  return (
-                    <TeamSection
-                      key={group.team}
-                      group={group}
-                      isExpanded={isExpanded}
-                      onToggle={() => toggleTeam(group.team)}
-                    />
-                  );
-                })}
-                {/* Grand total row */}
-                <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold dark:border-gray-600 dark:bg-gray-800/50">
-                  <td className="px-4 py-3 text-gray-900 dark:text-white">
-                    Grand Total
-                  </td>
-                  <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
-                    {fmt(grandTotal.bonus)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
-                    {fmt(grandTotal.photo)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
-                    {fmt(grandTotal.reel)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
-                    {fmt(grandTotal.story)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
-                    {fmt(grandTotal.text)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-green-600 dark:text-green-400">
-                    {fmt(grandTotal.total)}
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+                      Loading revenue data...
+                    </div>
                   </td>
                 </tr>
-              </>
-            )}
-          </tbody>
-        </table>
+              ) : teamGroups.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+                    No revenue data found for the selected date range.
+                  </td>
+                </tr>
+              ) : (
+                <>
+                  {teamGroups.map((group) => {
+                    const isExpanded = expandedTeams.has(group.team);
+                    return (
+                      <TeamSection
+                        key={group.team}
+                        group={group}
+                        isExpanded={isExpanded}
+                        onToggle={() => toggleTeam(group.team)}
+                      />
+                    );
+                  })}
+                  {/* Grand total row */}
+                  <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold dark:border-gray-600 dark:bg-gray-800/50">
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">
+                      Grand Total
+                    </td>
+                    <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
+                      {fmt(grandTotal.bonus)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
+                      {fmt(grandTotal.photo)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
+                      {fmt(grandTotal.reel)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
+                      {fmt(grandTotal.story)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-gray-700 dark:text-gray-300">
+                      {fmt(grandTotal.text)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-green-600 dark:text-green-400">
+                      {fmt(grandTotal.total)}
+                    </td>
+                  </tr>
+                </>
+              )}
+            </tbody>
+          </table>
         </div>{/* end overflow-x-auto */}
       </div>
     </div>

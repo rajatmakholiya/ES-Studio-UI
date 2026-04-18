@@ -86,7 +86,7 @@ export default function DateRangePicker({ startDate, endDate, onChange }: DateRa
               <input 
                 type="date" 
                 value={tempEnd} 
-                max={new Date().toISOString().split('T')[0]}
+                max={getLocalDateString(new Date())}
                 onChange={(e) => setTempEnd(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />

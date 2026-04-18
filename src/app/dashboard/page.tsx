@@ -22,12 +22,18 @@ export default function Dashboard() {
   const [metaData, setMetaData] = useState<any>(null);
 
   const [dateRange] = useState(() => {
+    const toLocalDate = (d: Date) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - 30);
     return {
-      startDate: start.toISOString().split("T")[0],
-      endDate: end.toISOString().split("T")[0],
+      startDate: toLocalDate(start),
+      endDate: toLocalDate(end),
     };
   });
 
