@@ -127,6 +127,16 @@ export async function triggerManualSync() {
   }
 }
 
+export async function triggerSocialManualSync() {
+  try {
+    const response = await apiClient.post(`/api/analytics/sync`);
+    return response.data;
+  } catch (error) {
+    console.error("Social Sync Error:", error);
+    throw error;
+  }
+}
+
 export async function fetchCountryStats(
   startDate: string,
   endDate: string,

@@ -26,6 +26,7 @@ export default function RevenueMappingsPage() {
       // Always refetch from server after a mutation — avoids stale-data race
       // conditions that happen when setQueryData is used with concurrent calls.
       queryClient.invalidateQueries({ queryKey: ["revenue-mappings"] });
+      queryClient.invalidateQueries({ queryKey: ["revenue-metrics"] });
     },
   });
 
@@ -65,6 +66,7 @@ export default function RevenueMappingsPage() {
         const ids = pagesInTeam.map((p) => p.id);
         const updated = await batchUpdateRevenueMappingTeam(ids, null);
         queryClient.setQueryData(["revenue-mappings"], updated);
+        queryClient.invalidateQueries({ queryKey: ["revenue-metrics"] });
       } catch (err) {
         console.error("Failed to unassign pages from team", err);
         alert("Failed to remove team. Please try again.");

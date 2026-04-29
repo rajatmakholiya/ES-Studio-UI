@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchRevenueMetrics, RevenueMetricRow } from "@/lib/api";
+import { fetchRevenueMetrics, RevenueMetricRow, triggerSocialManualSync } from "@/lib/api";
 import {
   DollarSign,
   TrendingUp,
@@ -20,6 +20,7 @@ import {
   CheckSquare,
   Square,
   Filter,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -390,6 +391,7 @@ export default function RevenuePage() {
   const [isPageFilterOpen, setIsPageFilterOpen] = useState(false);
   const [pageSearchQuery, setPageSearchQuery] = useState("");
   const [hoveredPageKey, setHoveredPageKey] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const pageFilterRef = useRef<HTMLDivElement>(null);
 
   const { data: rawRows = [], isLoading } = useQuery({
@@ -526,6 +528,19 @@ export default function RevenuePage() {
     }
   };
 
+  const handleSync = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      await triggerSocialManualSync();
+      alert("Manual sync triggered! Data will be updated in the background.");
+    } catch (err: any) {
+      alert("Failed to trigger sync: " + (err.response?.data?.error || err.message));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -539,6 +554,14 @@ export default function RevenuePage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+          >
+            <RefreshCw size={16} className={isSyncing ? "animate-spin" : ""} />
+            {isSyncing ? "Syncing..." : "Manual Sync"}
+          </button>
           <button
             onClick={handleExport}
             disabled={isLoading || teamGroups.length === 0}
