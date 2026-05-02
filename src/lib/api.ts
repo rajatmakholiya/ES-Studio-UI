@@ -602,3 +602,57 @@ export async function sendTestReport(): Promise<{ success: boolean; message: str
   const response = await apiClient.post(`/v1/email-reports/send-test`);
   return response.data;
 }
+
+// ---- Report Sports Mappings APIs ----
+
+const REPORT_SPORTS_MAPPINGS_URL = `/v1/report-sports-mappings`;
+
+export interface ReportSportsMappingRow {
+  id: number;
+  profileId: string;
+  pageName: string;
+  sport: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchReportSportsMappings(): Promise<ReportSportsMappingRow[]> {
+  try {
+    const response = await apiClient.get(REPORT_SPORTS_MAPPINGS_URL);
+    return response.data;
+  } catch (error) {
+    console.error("Report Sports Mappings Error:", error);
+    return [];
+  }
+}
+
+/** Sync profiles into mappings table (creates rows for new profiles). */
+export async function syncReportSportsMappings(
+  profiles: { profileId: string; name: string }[],
+): Promise<ReportSportsMappingRow[]> {
+  try {
+    const response = await apiClient.post(`${REPORT_SPORTS_MAPPINGS_URL}/sync`, { profiles });
+    return response.data;
+  } catch (error) {
+    console.error("Sync Report Sports Mappings Error:", error);
+    return [];
+  }
+}
+
+/** Update sport for a single mapping. */
+export async function updateReportSportsMapping(
+  id: number,
+  sport: string | null,
+): Promise<ReportSportsMappingRow[]> {
+  const response = await apiClient.patch(`${REPORT_SPORTS_MAPPINGS_URL}/${id}`, { sport });
+  return response.data;
+}
+
+/** Batch-update sport for multiple mapping IDs. */
+export async function batchUpdateReportSportsMappingSport(
+  ids: number[],
+  sport: string | null,
+): Promise<ReportSportsMappingRow[]> {
+  const response = await apiClient.patch(`${REPORT_SPORTS_MAPPINGS_URL}/batch/sport`, { ids, sport });
+  return response.data;
+}
